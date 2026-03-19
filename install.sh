@@ -142,23 +142,6 @@ for i in "${selected_indices[@]}"; do
         fi
     fi
 done
-    
-    echo -n "Installing $agent_key... "
-    
-    # Attempt local copy first if available (dev mode), else download
-    if [ -f "$SCRIPT_DIR/.gemini/agents/$agent_key.md" ]; then
-        cp "$SCRIPT_DIR/.gemini/agents/$agent_key.md" "$target_file"
-        echo -e "${GREEN}Done (Local)${NC}"
-    else
-        download_file "$REPO_BASE_URL/.gemini/agents/$agent_key.md" "$target_file"
-        if [ $? -eq 0 ]; then
-            echo -e "${GREEN}Done${NC}"
-        else
-            echo -e "${RED}Failed to download${NC}"
-        fi
-    fi
-done
-
 
 rm "$TEMP_LIST"
 echo -e "\n${GREEN}Installation complete! Agents are located in $AGENTS_DIR${NC}"
