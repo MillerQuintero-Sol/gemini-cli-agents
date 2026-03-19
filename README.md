@@ -4,20 +4,21 @@ A collection of specialized AI agents for the Gemini CLI, designed to streamline
 
 ## 🚀 Quick Install
 
-### Interactive Mode (Recommended)
-This will open a menu to let you choose which agents to install:
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agents/main/install.sh)
-```
-
 ### Silent Mode (Flags)
 Install specific agents or all of them without a menu:
 ```bash
 # Install everything
 curl -fsSL https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agents/main/install.sh | bash -s -- --all
 
+```bash
 # Install specific agents
 curl -fsSL https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agents/main/install.sh | bash -s -- --frontend-react --backend-django-drf
+```
+
+### Interactive Mode (Recommended)
+This will open a menu to let you choose which agents to install:
+```bash
+curl -fsSL https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agents/main/install.sh | bash
 ```
 
 ## 📦 Available Agents
