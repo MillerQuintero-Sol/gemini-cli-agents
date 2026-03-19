@@ -133,7 +133,18 @@ for i in "${selected_indices[@]}"; do
     
     echo -n "Installing $agent_key... "
     
-    # Attempt local copy first if available (dev mode), else download
+    # If --force is used, we ALWAYS download from the official repo
+    if [ "$FORCE_OVERWRITE" = true ]; then
+        download_file "$REPO_BASE_URL/.gemini/agents/$agent_key.md" "$target_file"
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}Done (Forced from Repo)${NC}"
+        else
+            echo -e "${RED}Failed to download${NC}"
+        fi
+        continue
+    fi
+    
+    # Normal flow: Attempt local copy first if available (dev mode), else download
     local_source="$SCRIPT_DIR/.gemini/agents/$agent_key.md"
     if [ -f "$local_source" ]; then
         # Check if source and target are different to avoid "same file" error
