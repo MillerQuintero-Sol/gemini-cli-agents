@@ -11,9 +11,9 @@ curl -fsSL https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agent
 ```
 
 ### Install Specific agents
-If you only need some agents, specify them with flags:
+If you only need some agents, specify them with flags. Use `--force` to overwrite existing files:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agents/main/install.sh | bash -s -- --frontend-react --backend-django-drf
+curl -fsSL https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agents/main/install.sh | bash -s -- --frontend-react --backend-django-drf --force
 ```
 
 ## 📦 Available Agents

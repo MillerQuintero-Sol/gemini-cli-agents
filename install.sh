@@ -34,7 +34,7 @@ download_file() {
 
 # Fetch agents list
 echo -e "Fetching available agents..."
-# Check if running locally for testing (optional flag or check file existence)
+# Check if running locally for testing
 if [ -f "$SCRIPT_DIR/agents.list" ]; then
     cp "$SCRIPT_DIR/agents.list" "$TEMP_LIST"
 else
@@ -59,22 +59,23 @@ done < "$TEMP_LIST"
 
 # Determine agents to install
 selected_indices=()
+FORCE_OVERWRITE=false
 
+# Process arguments
 if [ "$#" -eq 0 ]; then
     echo "No arguments provided. Installing ALL agents by default."
     for i in "${!agents_keys[@]}"; do
         selected_indices+=($i)
     done
 else
-    echo "Arguments detected. Installing specific agents..."
+    echo "Arguments detected. Processing..."
     for arg in "$@"; do
         if [[ "$arg" == "--all" ]]; then
-            echo "Flag --all detected. Selecting all agents."
-            selected_indices=()
             for i in "${!agents_keys[@]}"; do
                 selected_indices+=($i)
             done
-            break 
+        elif [[ "$arg" == "--force" ]]; then
+            FORCE_OVERWRITE=true
         elif [[ "$arg" == --* ]]; then
             # Remove leading --
             agent_arg="${arg:2}"
@@ -93,6 +94,9 @@ else
     done
 fi
 
+# Remove duplicates from selection
+selected_indices=($(printf "%s\n" "${selected_indices[@]}" | sort -u))
+
 if [ ${#selected_indices[@]} -eq 0 ]; then
     echo "No valid agents selected. Exiting."
     rm "$TEMP_LIST"
@@ -110,19 +114,19 @@ for i in "${selected_indices[@]}"; do
     target_file="$AGENTS_DIR/$agent_key.md"
     
     # Check if exists
-    if [ -f "$target_file" ]; then
-        # If running interactively (terminal), ask for confirmation
-        if [ -t 0 ]; then
+    if [ -f "$target_file" ] && [ "$FORCE_OVERWRITE" = false ]; then
+        # Check if we can ask the user (TTY available)
+        if [ -c /dev/tty ]; then
             echo -n "Agent '$agent_key' already exists. Overwrite? [y/N] "
-            read -n 1 -r overwrite
+            read -n 1 -r overwrite < /dev/tty
             echo
             if [[ ! $overwrite =~ ^[Yy]$ ]]; then
                 echo "Skipping $agent_key"
                 continue
             fi
         else
-            # Non-interactive mode: Skip safely to avoid hanging
-            echo "Agent '$agent_key' already exists. Skipping (run interactively to overwrite)."
+            # Non-interactive environment (like a pure pipe or cron)
+            echo "Agent '$agent_key' already exists. Skipping (use --force to overwrite)."
             continue
         fi
     fi
