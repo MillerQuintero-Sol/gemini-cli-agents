@@ -65,7 +65,7 @@ for i in "${!agents_keys[@]}"; do
 done
 
 echo -e "\n${BLUE}Enter numbers separated by spaces (e.g., '1 3') or '0' for all:${NC}"
-read -r selection
+read -r selection < /dev/tty
 
 # Process selection
 selected_indices=()
@@ -101,7 +101,7 @@ for i in "${selected_indices[@]}"; do
     # Check if exists
     if [ -f "$target_file" ]; then
         echo -n "Agent '$agent_key' already exists. Overwrite? [y/N] "
-        read -n 1 -r
+        read -n 1 -r REPLY < /dev/tty
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
             echo "Skipping $agent_key"

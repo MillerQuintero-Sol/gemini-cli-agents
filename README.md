@@ -7,7 +7,7 @@ A collection of specialized AI agents for the Gemini CLI, designed to streamline
 To install these agents into your project, run the following command in your project root:
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agents/main/install.sh)"
+curl -fsSL https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agents/main/install.sh | bash
 ```
 
 ## 📦 Available Agents
