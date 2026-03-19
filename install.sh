@@ -134,9 +134,15 @@ for i in "${selected_indices[@]}"; do
     echo -n "Installing $agent_key... "
     
     # Attempt local copy first if available (dev mode), else download
-    if [ -f "$SCRIPT_DIR/.gemini/agents/$agent_key.md" ]; then
-        cp "$SCRIPT_DIR/.gemini/agents/$agent_key.md" "$target_file"
-        echo -e "${GREEN}Done (Local)${NC}"
+    local_source="$SCRIPT_DIR/.gemini/agents/$agent_key.md"
+    if [ -f "$local_source" ]; then
+        # Check if source and target are different to avoid "same file" error
+        if [ "$(readlink -f "$local_source")" != "$(readlink -f "$target_file" 2>/dev/null)" ]; then
+            cp "$local_source" "$target_file"
+            echo -e "${GREEN}Done (Local)${NC}"
+        else
+            echo -e "${GREEN}Done (Already in place)${NC}"
+        fi
     else
         download_file "$REPO_BASE_URL/.gemini/agents/$agent_key.md" "$target_file"
         if [ $? -eq 0 ]; then
