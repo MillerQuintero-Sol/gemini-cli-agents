@@ -3,7 +3,7 @@
 # Configuration
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 # Replace this with your actual repository raw URL, or set REPO_URL environment variable
-REPO_BASE_URL="${REPO_URL:-https://raw.githubusercontent.com/YOUR_USERNAME/gemini-cli-agents/main}"
+REPO_BASE_URL="${REPO_URL:-https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agents/main}"
 AGENTS_DIR=".gemini/agents"
 TEMP_LIST="/tmp/gemini_agents_list_$(date +%s).txt"
 
