@@ -57,29 +57,72 @@ while IFS='|' read -r key desc || [ -n "$key" ]; do
     fi
 done < "$TEMP_LIST"
 
-# Display Menu
-echo -e "\n${GREEN}Available Agents:${NC}"
-echo "0) Install ALL Agents"
-for i in "${!agents_keys[@]}"; do
-    echo "$((i+1))) ${agents_keys[$i]} - ${agents_descs[$i]}"
-done
-
-echo -e "\n${BLUE}Enter numbers separated by spaces (e.g., '1 3') or '0' for all:${NC}"
-read -r selection < /dev/tty
-
-# Process selection
+# Process Arguments
 selected_indices=()
-if [[ "$selection" == "0" ]] || [[ "$selection" == *" 0 "* ]] || [[ "$selection" == "0 "* ]] || [[ "$selection" == *" 0" ]]; then
-    echo "Selected: ALL agents"
-    for i in "${!agents_keys[@]}"; do
-        selected_indices+=($i)
-    done
-else
-    for num in $selection; do
-        if [[ "$num" =~ ^[0-9]+$ ]] && [ "$num" -ge 1 ] && [ "$num" -le "${#agents_keys[@]}" ]; then
-            selected_indices+=($((num-1)))
+install_mode="interactive"
+
+if [ "$#" -gt 0 ]; then
+    install_mode="args"
+    for arg in "$@"; do
+        if [[ "$arg" == "--all" ]]; then
+            echo "Flag --all detected. Selecting all agents."
+            selected_indices=()
+            for i in "${!agents_keys[@]}"; do
+                selected_indices+=($i)
+            done
+            break 
+        elif [[ "$arg" == --* ]]; then
+            # Remove leading --
+            agent_arg="${arg:2}"
+            found=false
+            for i in "${!agents_keys[@]}"; do
+                if [[ "${agents_keys[$i]}" == "$agent_arg" ]]; then
+                    selected_indices+=($i)
+                    found=true
+                    break
+                fi
+            done
+            if [ "$found" = false ]; then
+                echo -e "${RED}Warning: Agent '$agent_arg' not found.${NC}"
+            fi
         fi
     done
+fi
+
+# Interactive Menu (only if no args provided)
+if [ "$install_mode" == "interactive" ]; then
+    echo -e "\n${GREEN}Available Agents:${NC}"
+    echo "0) Install ALL Agents"
+    for i in "${!agents_keys[@]}"; do
+        echo "$((i+1))) ${agents_keys[$i]} - ${agents_descs[$i]}"
+    done
+
+    echo -e "\n${BLUE}Enter numbers separated by spaces (e.g., '1 3') or '0' for all:${NC}"
+    
+    # Improved input handling for piped execution
+    if [ -t 0 ]; then
+        read -r selection
+    elif [ -c /dev/tty ]; then
+        read -r selection < /dev/tty
+    else
+        echo -e "${RED}Error: Cannot read user input. Please use arguments (e.g., --all or --backend-django) or run with 'bash <(curl ...)'${NC}"
+        rm "$TEMP_LIST"
+        exit 1
+    fi
+
+    # Process selection
+    if [[ "$selection" == "0" ]] || [[ "$selection" == *" 0 "* ]] || [[ "$selection" == "0 "* ]] || [[ "$selection" == *" 0" ]]; then
+        echo "Selected: ALL agents"
+        for i in "${!agents_keys[@]}"; do
+            selected_indices+=($i)
+        done
+    else
+        for num in $selection; do
+            if [[ "$num" =~ ^[0-9]+$ ]] && [ "$num" -ge 1 ] && [ "$num" -le "${#agents_keys[@]}" ]; then
+                selected_indices+=($((num-1)))
+            fi
+        done
+    fi
 fi
 
 if [ ${#selected_indices[@]} -eq 0 ]; then
@@ -100,10 +143,21 @@ for i in "${selected_indices[@]}"; do
     
     # Check if exists
     if [ -f "$target_file" ]; then
-        echo -n "Agent '$agent_key' already exists. Overwrite? [y/N] "
-        read -n 1 -r REPLY < /dev/tty
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        overwrite="n"
+        if [ "$install_mode" == "args" ]; then
+             echo "Agent '$agent_key' already exists. Skipping (use interactive mode to overwrite)."
+             continue
+        else
+            echo -n "Agent '$agent_key' already exists. Overwrite? [y/N] "
+            if [ -t 0 ]; then
+                read -n 1 -r overwrite
+            elif [ -c /dev/tty ]; then
+                read -n 1 -r overwrite < /dev/tty
+            fi
+            echo
+        fi
+        
+        if [[ ! $overwrite =~ ^[Yy]$ ]]; then
             echo "Skipping $agent_key"
             continue
         fi
