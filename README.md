@@ -4,38 +4,33 @@ A collection of specialized AI agents for the Gemini CLI, designed to streamline
 
 ## 🚀 Quick Install
 
-### Silent Mode (Flags)
-Install specific agents or all of them without a menu:
-```bash
-# Install everything
-curl -fsSL https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agents/main/install.sh | bash -s -- --all
-
-```bash
-# Install specific agents
-curl -fsSL https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agents/main/install.sh | bash -s -- --frontend-react --backend-django-drf
-```
-
-### Interactive Mode (Recommended)
-This will open a menu to let you choose which agents to install:
+### Install ALL agents (Default)
+Run this command in your project root to install every available agent:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agents/main/install.sh | bash
 ```
 
+### Install Specific agents
+If you only need some agents, specify them with flags:
+```bash
+curl -fsSL https://raw.githubusercontent.com/MillerQuintero-Sol/gemini-cli-agents/main/install.sh | bash -s -- --frontend-react --backend-django-drf
+```
+
 ## 📦 Available Agents
 
-| Agent | Description |
+| Agent Flag | Description |
 |-------|-------------|
-| **architect-agent** | System design, ADRs, Code Quality |
-| **backend-django** | Django Backend (Monolith/SSR) |
-| **backend-django-drf** | Django REST Framework Backend (API) |
-| **backend-nodejs** | Node.js Backend (TypeScript, Express) |
-| **devops-docker** | Docker & Docker Compose workflows |
-| **frontend-react** | React + TypeScript Frontend |
-| **fullstack-django** | Fullstack Django (DTL + HTMX) |
-| **pm-agent** | Product Management & Requirements |
-| **qa-backend-django-drf** | QA for Django/DRF (Pytest) |
-| **qa-frontend-react** | QA for React (RTL, Playwright) |
-| **uxui-agent** | UX/UI Design & Wireframing |
+| `--architect-agent` | System design, ADRs, Code Quality |
+| `--backend-django` | Django Backend (Monolith/SSR) |
+| `--backend-django-drf` | Django REST Framework Backend (API) |
+| `--backend-nodejs` | Node.js Backend (TypeScript, Express) |
+| `--devops-docker` | Docker & Docker Compose workflows |
+| `--frontend-react` | React + TypeScript Frontend |
+| `--fullstack-django` | Fullstack Django (DTL + HTMX) |
+| `--pm-agent` | Product Management & Requirements |
+| `--qa-backend-django-drf` | QA for Django/DRF (Pytest) |
+| `--qa-frontend-react` | QA for React (RTL, Playwright) |
+| `--uxui-agent` | UX/UI Design & Wireframing |
 
 ## 🛠️ Manual Installation
 

@@ -57,12 +57,16 @@ while IFS='|' read -r key desc || [ -n "$key" ]; do
     fi
 done < "$TEMP_LIST"
 
-# Process Arguments
+# Determine agents to install
 selected_indices=()
-install_mode="interactive"
 
-if [ "$#" -gt 0 ]; then
-    install_mode="args"
+if [ "$#" -eq 0 ]; then
+    echo "No arguments provided. Installing ALL agents by default."
+    for i in "${!agents_keys[@]}"; do
+        selected_indices+=($i)
+    done
+else
+    echo "Arguments detected. Installing specific agents..."
     for arg in "$@"; do
         if [[ "$arg" == "--all" ]]; then
             echo "Flag --all detected. Selecting all agents."
@@ -89,42 +93,6 @@ if [ "$#" -gt 0 ]; then
     done
 fi
 
-# Interactive Menu (only if no args provided)
-if [ "$install_mode" == "interactive" ]; then
-    echo -e "\n${GREEN}Available Agents:${NC}"
-    echo "0) Install ALL Agents"
-    for i in "${!agents_keys[@]}"; do
-        echo "$((i+1))) ${agents_keys[$i]} - ${agents_descs[$i]}"
-    done
-
-    echo -e "\n${BLUE}Enter numbers separated by spaces (e.g., '1 3') or '0' for all:${NC}"
-    
-    # Improved input handling for piped execution
-    if [ -t 0 ]; then
-        read -r selection
-    elif [ -c /dev/tty ]; then
-        read -r selection < /dev/tty
-    else
-        echo -e "${RED}Error: Cannot read user input. Please use arguments (e.g., --all or --backend-django) or run with 'bash <(curl ...)'${NC}"
-        rm "$TEMP_LIST"
-        exit 1
-    fi
-
-    # Process selection
-    if [[ "$selection" == "0" ]] || [[ "$selection" == *" 0 "* ]] || [[ "$selection" == "0 "* ]] || [[ "$selection" == *" 0" ]]; then
-        echo "Selected: ALL agents"
-        for i in "${!agents_keys[@]}"; do
-            selected_indices+=($i)
-        done
-    else
-        for num in $selection; do
-            if [[ "$num" =~ ^[0-9]+$ ]] && [ "$num" -ge 1 ] && [ "$num" -le "${#agents_keys[@]}" ]; then
-                selected_indices+=($((num-1)))
-            fi
-        done
-    fi
-fi
-
 if [ ${#selected_indices[@]} -eq 0 ]; then
     echo "No valid agents selected. Exiting."
     rm "$TEMP_LIST"
@@ -143,25 +111,37 @@ for i in "${selected_indices[@]}"; do
     
     # Check if exists
     if [ -f "$target_file" ]; then
-        overwrite="n"
-        if [ "$install_mode" == "args" ]; then
-             echo "Agent '$agent_key' already exists. Skipping (use interactive mode to overwrite)."
-             continue
-        else
+        # If running interactively (terminal), ask for confirmation
+        if [ -t 0 ]; then
             echo -n "Agent '$agent_key' already exists. Overwrite? [y/N] "
-            if [ -t 0 ]; then
-                read -n 1 -r overwrite
-            elif [ -c /dev/tty ]; then
-                read -n 1 -r overwrite < /dev/tty
-            fi
+            read -n 1 -r overwrite
             echo
-        fi
-        
-        if [[ ! $overwrite =~ ^[Yy]$ ]]; then
-            echo "Skipping $agent_key"
+            if [[ ! $overwrite =~ ^[Yy]$ ]]; then
+                echo "Skipping $agent_key"
+                continue
+            fi
+        else
+            # Non-interactive mode: Skip safely to avoid hanging
+            echo "Agent '$agent_key' already exists. Skipping (run interactively to overwrite)."
             continue
         fi
     fi
+    
+    echo -n "Installing $agent_key... "
+    
+    # Attempt local copy first if available (dev mode), else download
+    if [ -f "$SCRIPT_DIR/.gemini/agents/$agent_key.md" ]; then
+        cp "$SCRIPT_DIR/.gemini/agents/$agent_key.md" "$target_file"
+        echo -e "${GREEN}Done (Local)${NC}"
+    else
+        download_file "$REPO_BASE_URL/.gemini/agents/$agent_key.md" "$target_file"
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}Done${NC}"
+        else
+            echo -e "${RED}Failed to download${NC}"
+        fi
+    fi
+done
     
     echo -n "Installing $agent_key... "
     
